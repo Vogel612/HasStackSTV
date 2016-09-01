@@ -1,22 +1,10 @@
------------------------------------------------------------------------------
---
--- Module      :  Main
--- Copyright   :
--- License     :  AllRightsReserved
---
--- Maintainer  :
--- Stability   :  provisional
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
-
 module Main (
     main
 ) where
 
-main :: IO ()
-main = mempty
+import Test.HUnit
+import TestVote
 
+main :: IO Counts
+main = runTestTT $ TestList [basicVote, multiVote, incompleteVote, basicVoteFail]
 

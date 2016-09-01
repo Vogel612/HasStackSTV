@@ -1,8 +1,4 @@
-module Vote (
-    Vote,
-    Preference,
-    fromString
-) where
+module Vote where
 
 data Preference = Preference {
    first :: Int,
@@ -13,6 +9,8 @@ data Preference = Preference {
 prefFromString :: String -> Preference
 prefFromString line = case words line of
     f:s:t:_ ->  Preference (read f) (read s) (read t)
+    f:s:_ -> Preference (read f) (read s) 0
+    f:_ -> Preference (read f) 0 0
     _ -> None
 
 data Vote = Vote {
