@@ -26,10 +26,7 @@ runElection :: Election -> ElectionResults
 runElection = undefined
 
 addCandidates :: Election -> [Candidate] -> Election
-addCandidates elect cand = addCandidates (addCandidate elect $ head cand) $ tail cand
-
-addCandidate :: Election -> Candidate -> Election
-addCandidate elect cand = Election (nub (candidates elect)++[cand]) (votes elect) (seats elect)
+addCandidates elect cand = Election (sort $ nub (candidates elect)++cand) (votes elect) (seats elect)
 
 addVotes :: Election -> [Vote] -> Election
 addVotes elect votes = addVotes (addVote elect $ head votes) $ tail votes
