@@ -1,10 +1,11 @@
-module TestVote where
+module TestVote (voteTests) where
 
 import Test.HUnit
 import Vote
 
---main :: IO Counts
---main = runTestTT $ TestList [basicVote, multiVote, incompleteVote, basicVoteFail]
+voteTests :: Test
+voteTests = TestLabel "Vote Tests" $
+    TestList [ basicVote, multiVote, basicVoteFail, incompleteVote, preferenceConstruction ]
 
 basicVote =
     TestCase $ assertEqual
@@ -21,7 +22,7 @@ multiVote =
 basicVoteFail =
     TestCase $ assertEqual
     "Should not parse incorrect vote"
-    (Vote None 0)
+    (Vote (checkedPreference 0 0 0) 0)
     (fromString "asd")
 
 incompleteVote =

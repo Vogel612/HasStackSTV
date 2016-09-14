@@ -13,7 +13,7 @@ combineBehaviour = TestLabel "Combine Votes" $ TestList [
     TestCase $ assertEqual
         "Combine With None"
         (Vote (checkedPreference 1 2 3) 2)
-        (combine (Vote None 1) $ Vote (checkedPreference 1 2 3) 1)
+        (combine (Vote (checkedPreference 0 0 0) 1) $ Vote (checkedPreference 1 2 3) 1)
     ]
 
 combineMultipleVotes :: Test
