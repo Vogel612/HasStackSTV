@@ -13,7 +13,7 @@ testCases :: Test
 testCases =
     TestList [
         voteTests
-        , combineBehaviour
+        , electionTests
         , candidateOrdering
         , basicTricklePreference
     ]

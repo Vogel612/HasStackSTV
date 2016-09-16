@@ -1,6 +1,7 @@
 module Candidate where
 
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 import Vote
 
 data Candidate = Candidate {
@@ -38,6 +39,13 @@ trickleAllPreferences :: [(Candidate, CandidateState)] -> [Vote] -> M.Map Candid
 trickleAllPreferences candidates [] score = score
 trickleAllPreferences candidates x score =
     trickleAllPreferences candidates (tail x) (tricklePreference candidates (head x) score)
+
+{-
+    Returns how many votes were "Lost" because they trickled down through all candidates
+-}
+totalExcess :: M.Map Candidate Double -> Double
+totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
+
 
 {-
     With the given CandidateStates applies a Vote to the given map of scores.

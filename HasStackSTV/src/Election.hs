@@ -4,7 +4,9 @@ module Election (
     runElection,
     addCandidates,
     addVotes,
-    combine, combineVotes)
+    combine,
+    combineVotes,
+    computeQuota)
 where
 
 import Vote
@@ -16,14 +18,6 @@ data Election = Election {
     votes :: [Vote],
     seats :: Int
 } deriving (Eq, Show)
-
-data ElectionResults = ElectionResults {
-    electedCandidates :: [Candidate],
-    rounds :: [Round]
-} deriving (Eq, Show)
-
-runElection :: Election -> ElectionResults
-runElection = undefined
 
 addCandidates :: Election -> [Candidate] -> Election
 addCandidates elect cand = Election (sort $ nub (candidates elect)++cand) (votes elect) (seats elect)
@@ -48,3 +42,27 @@ selectPref :: Vote -> Vote -> Preference
 selectPref v1 v2
     | pref v1 == checkedPreference 0 0 0 = pref v2
     | otherwise = pref v1
+
+data ElectionResults = ElectionResults {
+    electedCandidates :: [Candidate],
+    rounds :: [Round]
+} deriving (Eq, Show)
+
+runElection :: Election -> ElectionResults
+runElection election = ElectionResults electedCandidates rounds
+    where
+        cand = sort $ nub (candidates election)++[Lost] -- check for stepped down candidates?
+        initialWeighting = map (\x -> (x,Hopeful)) cand
+        rounds = runRounds (computeQuota (totalVotes $ votes election) (seats election))
+             (votes election) (Round initialWeighting)
+        electedCandidates = map fst $ filter (\(c,s) -> s /= Excluded) $ candidateData (last rounds)
+
+runRounds :: (Double -> Double) -> [Vote] -> Round -> [Round]
+runRounds quota votes round = undefined
+
+{-
+    Computes the quota necessary to get counted as Elected from the total number of votes,
+    the excess votes that went "lost" and the number of seats available for this election
+-}
+computeQuota :: Double -> Int -> Double -> Double
+computeQuota total seats excess = (total - excess) / fromIntegral (seats + 1)
