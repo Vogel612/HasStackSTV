@@ -1,0 +1,42 @@
+name: HasStackSTV
+version: 0.0.1
+cabal-version: 1.12
+build-type: Simple
+license: AllRightsReserved
+stability: provisional
+synopsis: Haskell implementation of STV
+description:
+    A Haskell Implementation of the Single Transferrable Vote system employed by StackExchange for moderator elections
+author: ShipsWithCannons, Vogel612
+
+executable HasStackSTV
+    main-is: Main.hs
+    build-depends:
+        base -any
+    default-language: Haskell2010
+    hs-source-dirs: src
+    other-modules:
+        Candidate
+        Election
+        Vote
+    ghc-options: -ferror-spans
+
+test-suite test-HasStackSTV
+    type: exitcode-stdio-1.0
+    main-is: TestMain.hs
+    build-depends:
+        base -any,
+        test-framework -any,
+        test-framework-hunit -any,
+        HUnit -any,
+        hspec, hspec-contrib,
+        containers ==0.5.*
+    default-language: Haskell2010
+    hs-source-dirs: test src
+    other-modules:
+        TestCandidate
+        TestElection
+        TestVote
+        Vote
+        Election
+    ghc-options: -ferror-spans

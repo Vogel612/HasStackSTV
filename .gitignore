@@ -1,0 +1,10 @@
+# binaries
+dist-newstyle/
+dist/
+
+#IDE files
+*.lkshs
+*.lkshw
+
+# local configuration
+*.local
