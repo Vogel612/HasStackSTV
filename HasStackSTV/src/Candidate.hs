@@ -4,6 +4,8 @@ import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Vote
 
+type Scores = M.Map Candidate Double
+
 data Candidate = Candidate {
     name :: String,
     number :: Int
@@ -27,7 +29,7 @@ data Round = Round {
 {-
     Calculates the candidate scores from their weights and all votes
 -}
-calculateVotes :: [(Candidate,CandidateState)] ->  [Vote] -> M.Map Candidate Double
+calculateVotes :: [(Candidate,CandidateState)] ->  [Vote] -> Scores
 calculateVotes candidates votes = do
     let scores = M.fromList $ map (\(x,_) -> (x, 0.0)) candidates
     trickleAllPreferences candidates votes scores
@@ -35,7 +37,7 @@ calculateVotes candidates votes = do
 {-
     With the given candidate states applies all the given votes by passing each vote to tricklePreference.
 -}
-trickleAllPreferences :: [(Candidate, CandidateState)] -> [Vote] -> M.Map Candidate Double -> M.Map Candidate Double
+trickleAllPreferences :: [(Candidate, CandidateState)] -> [Vote] -> Scores -> Scores
 trickleAllPreferences candidates [] score = score
 trickleAllPreferences candidates x score =
     trickleAllPreferences candidates (tail x) (tricklePreference candidates (head x) score)
@@ -43,7 +45,7 @@ trickleAllPreferences candidates x score =
 {-
     Returns how many votes were "Lost" because they trickled down through all candidates
 -}
-totalExcess :: M.Map Candidate Double -> Double
+totalExcess :: Scores -> Double
 totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
 
 
@@ -55,7 +57,7 @@ totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
     of the vote and pass on the rest down the given preference. Votes that are not fully consumed by a hopeful candidate
     will be counted as Lost. Excluded candidates do not consume votes.
 -}
-tricklePreference :: [(Candidate,CandidateState)] -> Vote -> M.Map Candidate Double -> M.Map Candidate Double
+tricklePreference :: [(Candidate,CandidateState)] -> Vote -> Scores -> Scores
 tricklePreference candidates vote scores = do
     let oldPref = pref vote
     let candidateState = candidates !! first oldPref
@@ -71,6 +73,6 @@ tricklePreference candidates vote scores = do
 
 getRatio :: CandidateState -> Double
 getRatio state = case state of
-    Elected _ -> ratio state
+    Elected a -> a
     Hopeful -> 1.0
     Excluded -> 0.0
