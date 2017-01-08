@@ -5,6 +5,8 @@ dist/
 #IDE files
 *.lkshs
 *.lkshw
+*.idea
+*.iml
 
 # local configuration
 *.local
