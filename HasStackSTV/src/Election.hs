@@ -11,22 +11,28 @@ where
 
 import Vote
 import Candidate
-import Data.List
+import Data.List(sort, nub, groupBy)
+import qualified Data.Map as M
 
 data Election = Election {
+    seats :: Int,
     candidates :: [Candidate],
-    votes :: [Vote],
-    seats :: Int
+    votes :: [Vote]
+} deriving (Eq, Show)
+
+data ElectionResults = ElectionResults {
+    electedCandidates :: [Candidate],
+    rounds :: [Round]
 } deriving (Eq, Show)
 
 addCandidates :: Election -> [Candidate] -> Election
-addCandidates elect cand = Election (sort $ nub (candidates elect)++cand) (votes elect) (seats elect)
+addCandidates elect cand = Election (seats elect) (sort $ nub (candidates elect)++cand) (votes elect)
 
 addVotes :: Election -> [Vote] -> Election
 addVotes elect votes = addVotes (addVote elect $ head votes) $ tail votes
 
 addVote :: Election -> Vote -> Election
-addVote elect vote = Election (candidates elect) (combineVotes (votes elect) [vote]) (seats elect)
+addVote elect vote = Election (seats elect) (candidates elect) (combineVotes (votes elect) [vote])
 
 combineVotes :: [Vote] -> [Vote] -> [Vote]
 combineVotes first second = map (foldl combine $ Vote (checkedPreference 0 0 0) 0) $
@@ -43,11 +49,6 @@ selectPref v1 v2
     | pref v1 == checkedPreference 0 0 0 = pref v2
     | otherwise = pref v1
 
-data ElectionResults = ElectionResults {
-    electedCandidates :: [Candidate],
-    rounds :: [Round]
-} deriving (Eq, Show)
-
 runElection :: Election -> ElectionResults
 runElection election = ElectionResults electedCandidates rounds
     where
@@ -59,6 +60,8 @@ runElection election = ElectionResults electedCandidates rounds
 
 runRounds :: (Double -> Double) -> [Vote] -> Round -> [Round]
 runRounds quota votes round = undefined
+convergeKeepRatios :: M.Map Candidate CandidateState -> [Vote] -> M.Map Candidate CandidateState
+convergeKeepRatios = undefined
 
 {-
     Computes the quota necessary to get counted as Elected from the total number of votes,
