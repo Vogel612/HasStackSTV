@@ -1,5 +1,6 @@
 module TestElection (electionTests) where
 
+import Data.List(take, intersperse)
 import Test.HUnit
 import Election
 import Vote
@@ -8,7 +9,9 @@ electionTests :: Test
 electionTests = TestLabel "All Tests for Election" $ TestList
     [combineBehaviour
     , combineMultipleVotes
-    , quotaTests]
+    , quotaTests
+    , takeModifiedTest
+    ]
 
 combineBehaviour :: Test
 combineBehaviour = TestLabel "Combine Votes" $ TestList [
@@ -44,4 +47,28 @@ quotaTests = TestLabel "Quota Tests" $ TestList [
         "Another simple quota"
         44.575
         (computeQuota 214 3 35.7)
+    ]
+
+takeModifiedTest :: Test
+takeModifiedTest = TestLabel "Take Modified" $ TestList [
+    TestCase $ assertEqual
+        "Simplistic case"
+        [1..6]
+        (takeModified $ [1..6] ++ [6..]),
+    TestCase $ assertEqual
+        "Back and Forth"
+        (take 5 $ intersperse 2 $ repeat 1)
+        (takeModified [1, 2, 1, 2, 1, 1]),
+    TestCase $ assertEqual
+        "Empty List"
+        []
+        (takeModified []:: [Int]),
+    TestCase $ assertEqual
+        "Trivial Case"
+        [1]
+        (takeModified $ repeat 1),
+    TestCase $ assertEqual
+        "simplistic concatenation"
+        [1,2,1]
+        (takeModified $ [1,2] ++ repeat 1)
     ]

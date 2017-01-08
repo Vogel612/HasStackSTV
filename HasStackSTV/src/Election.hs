@@ -6,7 +6,8 @@ module Election (
     addVotes,
     combine,
     combineVotes,
-    computeQuota)
+    computeQuota,
+    takeModified)
 where
 
 import Vote
@@ -52,14 +53,42 @@ selectPref v1 v2
 runElection :: Election -> ElectionResults
 runElection election = ElectionResults electedCandidates rounds
     where
-        cand = sort $ nub (candidates election)++[Lost] -- check for stepped down candidates?
-        initialWeighting = map (\x -> (x,Hopeful)) cand
-        rounds = runRounds (computeQuota (totalVotes $ votes election) (seats election))
-             (votes election) (Round initialWeighting)
-        electedCandidates = map fst $ filter (\(c,s) -> s /= Excluded) $ candidateData (last rounds)
+        rounds = takeModified $ iterate
+            (nextRound election)
+            (Round $ zip (sort . nub $ candidates election ++ [Lost]) (repeat Hopeful))
+        electedCandidates = map fst $ filter (\(c, s) -> s /= Excluded) $ candidateData (last rounds)
 
+{-
+    Take items from a list, as long as the last item taken is not the same as the next item in the list.
+    Passing an empty list returns an empty list.
+-}
+takeModified :: Eq a => [a] -> [a]
+takeModified (x:xs) = [x] ++ go x xs
+    where
+    go :: Eq a => a -> [a] -> [a]
+    go elem (x':xs')
+       | elem == x' = []
+       | otherwise  = [x'] ++ go x' xs'
+    go elem [] = []
+takeModified [] = []
+
+{-
+    Run a Round of the given election. The result is the "starting configuration" for the next round.
+    Assuming the election is finished, this is equivalent to id
+-}
+nextRound :: Election -> Round -> Round
+nextRound election = id -- to be implemented
+
+{-
+    Successively run each round. Since they are dependent on one another, we need the results of the
+    previous round anyways. The first round must be the round that comes up when all candidates are marked helpful.
+
+    Takes a calculator for the passing quota depending on the excess votes, the entirity of cast votes and the "previous"
+    and generates the subsequent rounds by recursively calling itself until all seats have been filled.
+-}
 runRounds :: (Double -> Double) -> [Vote] -> Round -> [Round]
-runRounds quota votes round = undefined
+runRounds quotaFromExcess votes round = undefined
+
 convergeKeepRatios :: M.Map Candidate CandidateState -> [Vote] -> M.Map Candidate CandidateState
 convergeKeepRatios = undefined
 
