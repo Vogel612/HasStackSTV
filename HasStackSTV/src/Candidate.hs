@@ -5,6 +5,7 @@ module Candidate (
     , Scores
     , Round (..)
     , calculateScores
+    , scores
     , totalExcess
     )
 where
@@ -42,6 +43,9 @@ data Round = Round {
 calculateScores :: CandidateData ->  [Vote] -> Scores
 calculateScores candidates votes = trickleAllPreferences candidates votes initialScore
     where initialScore = M.fromList $ zip (map fst candidates) $ repeat 0.0
+
+scores :: Round -> [Vote] -> Scores
+scores round votes = calculateScores (candidateData round) votes
 
 {-
     With the given candidate states applies all the given votes by passing each vote to tricklePreference.

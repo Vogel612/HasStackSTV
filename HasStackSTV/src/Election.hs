@@ -77,7 +77,10 @@ takeModified [] = []
     Assuming the election is finished, this is equivalent to id
 -}
 nextRound :: Election -> Round -> Round
-nextRound election = id -- to be implemented
+nextRound election round = round -- to be implemented
+    where
+        v = votes election
+        q = quota election $ scores round v
 
 {-
     Successively run each round. Since they are dependent on one another, we need the results of the
@@ -96,5 +99,12 @@ convergeKeepRatios = undefined
     Computes the quota necessary to get counted as Elected from the total number of votes,
     the excess votes that went "lost" and the number of seats available for this election
 -}
+quota :: Election -> Scores -> Double
+quota election scores = (t - e) / s
+    where
+        t = totalVotes $ votes election
+        s = fromIntegral(1 + seats election)
+        e = totalExcess scores
+
 computeQuota :: Double -> Int -> Double -> Double
 computeQuota total seats excess = (total - excess) / fromIntegral (seats + 1)
