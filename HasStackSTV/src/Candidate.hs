@@ -1,4 +1,13 @@
-module Candidate where
+module Candidate (
+    Candidate(..)
+    , CandidateState (..)
+    , CandidateData
+    , Scores
+    , Round (..)
+    , calculateScores
+    , totalExcess
+    )
+where
 
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)

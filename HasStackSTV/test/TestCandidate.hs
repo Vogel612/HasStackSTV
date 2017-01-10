@@ -31,24 +31,18 @@ basicTricklePreference =
         TestCase $ assertEqual
             "single vote"
             [(Lost, 0.0), (Candidate "foo" 1, 10.0), (Candidate "bar" 2, 0.0), (Candidate "baz" 3, 0.0)]
-            (M.toList $ tricklePreference
-                (map (\x -> (x, Hopeful)) testCandidates)
-                (Vote (checkedPreference 1 2 3) 10)
-                (M.fromList $ map (\x -> (x, 0.0)) testCandidates)),
+            (M.toList $ calculateScores (zip testCandidates $ repeat Hopeful) [(Vote (checkedPreference 1 2 3) 10)]),
         TestCase $ assertEqual
             "single lost"
             [(Lost, 10.0), (Candidate "foo" 1, 0.0), (Candidate "bar" 2, 0.0), (Candidate "baz" 3, 0.0)]
-            (M.toList $ tricklePreference
-                (map (\x -> (x, if x == Lost then Hopeful else Excluded)) testCandidates)
-                (Vote (checkedPreference 0 0 0) 10)
-                (M.fromList $ map (\x -> (x, 0.0)) testCandidates)),
+            (M.toList $ calculateScores (map (\x -> (x, if x == Lost then Hopeful else Excluded)) testCandidates)
+                [(Vote (checkedPreference 0 0 0) 10)]),
         TestCase $ assertEqual
             "single vote"
             [(Lost, 1.25), (Candidate "foo" 1, 5.0), (Candidate "bar" 2, 2.5), (Candidate "baz" 3, 1.25)]
-            (M.toList $ tricklePreference
+            (M.toList $ calculateScores
                 (map (\x -> (x, if x == Lost then Hopeful else Elected 0.5)) testCandidates)
-                (Vote (checkedPreference 1 2 3) 10)
-                (M.fromList $ map (\x -> (x, 0.0)) testCandidates))
+                [(Vote (checkedPreference 1 2 3) 10)])
         ]
     where
         testCandidates = [Lost,Candidate "foo" 1,Candidate "bar" 2,Candidate "baz" 3]
