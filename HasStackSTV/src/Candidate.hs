@@ -5,6 +5,7 @@ import Data.Maybe (fromMaybe)
 import Vote
 
 type Scores = M.Map Candidate Double
+type CandidateData = [(Candidate, CandidateState)]
 
 data Candidate = Candidate {
     name :: String,
@@ -23,21 +24,20 @@ data CandidateState = Elected {
   | Excluded deriving (Show, Eq)
 
 data Round = Round {
- candidateData :: [(Candidate, CandidateState)]
+ candidateData :: CandidateData
 } deriving (Eq, Show)
 
 {-
     Calculates the candidate scores from their weights and all votes
 -}
-calculateVotes :: [(Candidate,CandidateState)] ->  [Vote] -> Scores
-calculateVotes candidates votes = do
-    let scores = M.fromList $ map (\(x,_) -> (x, 0.0)) candidates
-    trickleAllPreferences candidates votes scores
+calculateScores :: CandidateData ->  [Vote] -> Scores
+calculateScores candidates votes = trickleAllPreferences candidates votes initialScore
+    where initialScore = M.fromList $ zip (map fst candidates) $ repeat 0.0
 
 {-
     With the given candidate states applies all the given votes by passing each vote to tricklePreference.
 -}
-trickleAllPreferences :: [(Candidate, CandidateState)] -> [Vote] -> Scores -> Scores
+trickleAllPreferences :: CandidateData -> [Vote] -> Scores -> Scores
 trickleAllPreferences candidates [] score = score
 trickleAllPreferences candidates x score =
     trickleAllPreferences candidates (tail x) (tricklePreference candidates (head x) score)
@@ -57,7 +57,7 @@ totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
     of the vote and pass on the rest down the given preference. Votes that are not fully consumed by a hopeful candidate
     will be counted as Lost. Excluded candidates do not consume votes.
 -}
-tricklePreference :: [(Candidate,CandidateState)] -> Vote -> Scores -> Scores
+tricklePreference :: CandidateData -> Vote -> Scores -> Scores
 tricklePreference candidates vote scores = do
     let oldPref = pref vote
     let candidateState = candidates !! first oldPref

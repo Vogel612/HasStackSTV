@@ -1,8 +1,8 @@
 module TestCandidate where
 
 import Candidate
-import Test.HUnit
-import Vote
+import Test.HUnit (Test(..), assertEqual, assertBool)
+import Vote (checkedPreference, Vote(..))
 import Data.List(permutations)
 import qualified Data.Map as M
 
