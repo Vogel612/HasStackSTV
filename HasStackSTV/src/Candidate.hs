@@ -45,11 +45,14 @@ calculateScores :: CandidateData ->  [Vote] -> Scores
 calculateScores candidates votes = trickleAllPreferences candidates votes initialScore
     where initialScore = M.fromList $ zip (map fst candidates) $ repeat 0.0
 
+{-
+    Convenience accessor to calculateScores dropping the need to unwrap Round
+-}
 scores :: Round -> [Vote] -> Scores
 scores round votes = calculateScores (candidateData round) votes
 
 {-
-
+    Count the elected candidates in a round
 -}
 countElected :: Round -> Int
 countElected round = length $ filter (\(c,s) -> s /= Excluded && s /= Hopeful) $ candidateData round

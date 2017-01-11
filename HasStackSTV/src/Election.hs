@@ -77,10 +77,12 @@ takeModified [] = []
     Assuming the election is finished, this is equivalent to id
 -}
 nextRound :: Election -> Round -> Round
-nextRound election round = round -- to be implemented
+nextRound election round = if filled == seats election then round else go round -- to be implemented
     where
+        filled = countElected round
         v = votes election
         q = quota election $ scores round v
+        go = id -- implement iterative scheme here
 
 {-
     The convergent iterative scheme is as follows:
