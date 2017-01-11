@@ -83,6 +83,20 @@ nextRound election round = round -- to be implemented
         q = quota election $ scores round v
 
 {-
+    The convergent iterative scheme is as follows:
+    set wj to 0 for excluded candidates, 1 for hopeful candidates, and their last calculated values of wj for elected candidates.
+    (Immediately after election of any candidate the last calculated value is 1 initially.)
+    Applying rule 2.3, using these weights,let vj be the total value of votes received by candidate j and let e be the total
+    excess.
+    Using this value for e, calculate the new quota q using rule 2.5.
+    Finally update the weights for elected candidates to values wj = wj * q / vj.
+    Repeat the process of successively updating wj, q vj and e until every fraction
+    q / vj , for elected candidates, lies within the limits 0.99999 and 1.00001 (inclusive).
+
+    If no candidate was elected in that manner, exclude the candidate with lowest votes. Resolve ties by PRNG
+-}
+
+{-
     Successively run each round. Since they are dependent on one another, we need the results of the
     previous round anyways. The first round must be the round that comes up when all candidates are marked helpful.
 
