@@ -47,3 +47,12 @@ basicTricklePreference =
     where
         testCandidates = [Lost,Candidate "foo" 1,Candidate "bar" 2,Candidate "baz" 3]
         prefs = map (\l -> checkedPreference (head l) (head $ tail l) (head $ tail $ tail l)) $ permutations [1,2,3]
+
+countTheElected :: Test
+countTheElected =
+    TestLabel "Count Elected" $ TestList [
+        TestCase $ assertEqual "two out of three" 2 $ countElected
+            $ Round [(Lost, Hopeful), (Candidate "foo" 1 , Elected 0.9), (Candidate "bar" 2, Elected 0.9), (Candidate "baz" 3, Excluded)],
+        TestCase $ assertEqual "nobody can across it" 0 $ countElected
+            $ Round [(Lost, Hopeful), (Candidate "foo" 1 , Hopeful), (Candidate "bar" 2, Hopeful), (Candidate "baz" 3, Excluded)]
+    ]

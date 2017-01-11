@@ -7,6 +7,7 @@ module Candidate (
     , calculateScores
     , scores
     , totalExcess
+    , countElected
     )
 where
 
@@ -46,6 +47,12 @@ calculateScores candidates votes = trickleAllPreferences candidates votes initia
 
 scores :: Round -> [Vote] -> Scores
 scores round votes = calculateScores (candidateData round) votes
+
+{-
+
+-}
+countElected :: Round -> Int
+countElected round = length $ filter (\(c,s) -> s /= Excluded && s /= Hopeful) $ candidateData round
 
 {-
     With the given candidate states applies all the given votes by passing each vote to tricklePreference.
