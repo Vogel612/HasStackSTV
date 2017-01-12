@@ -48,8 +48,8 @@ calculateScores candidates votes = trickleAllPreferences candidates votes initia
 {-
     Convenience accessor to calculateScores dropping the need to unwrap Round
 -}
-scores :: Round -> [Vote] -> Scores
-scores round votes = calculateScores (candidateData round) votes
+scores :: [Vote] -> Round -> Scores
+scores votes round = calculateScores (candidateData round) votes
 
 {-
     Count the elected candidates in a round

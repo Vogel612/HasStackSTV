@@ -77,13 +77,15 @@ takeModified [] = []
     Assuming the election is finished, this is equivalent to id
 -}
 nextRound :: Election -> Round -> Round
-nextRound election round = if filled == seats election then round else go round -- to be implemented
+nextRound election round = if filled == seats election then round else go (quota election) (scores $ votes election) round -- to be implemented
     where
-        filled = countElected round
-        v = votes election
-        q = quota election $ scores round v
-        go = id -- implement iterative scheme here
-
+    filled = countElected round
+    go :: (Scores -> Double) -> (Round -> Scores) -> Round -> Round
+    go quota' scores' round = newRound
+        where
+        s = scores' round
+        q = quota' s
+        newRound = (Round $ candidateData round) -- calculate wj+1
 {-
     The convergent iterative scheme is as follows:
     set wj to 0 for excluded candidates, 1 for hopeful candidates, and their last calculated values of wj for elected candidates.
