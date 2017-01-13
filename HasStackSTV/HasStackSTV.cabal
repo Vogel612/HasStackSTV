@@ -19,6 +19,7 @@ executable HasStackSTV
         Candidate
         Election
         Vote
+        DData
     ghc-options: -ferror-spans
 
 test-suite test-HasStackSTV
@@ -37,6 +38,9 @@ test-suite test-HasStackSTV
         TestCandidate
         TestElection
         TestVote
+        TestDData
         Vote
         Election
+        DData
+        Candidate
     ghc-options: -ferror-spans
