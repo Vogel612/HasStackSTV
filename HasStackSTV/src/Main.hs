@@ -3,8 +3,8 @@ module Main (
 ) where
 
 import System.IO(readFile, getContents)
-import Vote(fromString)
-import Election(Election(..), runElection, ElectionResults(..), combineVotes)
+import Vote(fromString, combineVotes)
+import Election(Election(..), runElection, ElectionResults(..))
 import Candidate(Candidate(..))
 
 main :: IO ()

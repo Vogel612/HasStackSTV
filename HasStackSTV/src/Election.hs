@@ -12,7 +12,8 @@ import DData(zipSnd, takeModified)
 import Vote
 import Candidate
 import Data.Ord(comparing)
-import Data.List(sort, nub, groupBy, sortBy)
+import Data.List(sort, nub, groupBy, sortBy, findIndex)
+import Data.Maybe(fromMaybe)
 import qualified Data.Map as M
 
 data Election = Election {
@@ -64,16 +65,24 @@ runElection election = ElectionResults electedCandidates rounds
 nextRound :: Election -> Round -> Round
 nextRound election round = if filled == seats election then round else (Round $ map (calcWeight q) d) -- to be implemented
     where
-    filled = countElected round
-    s = scores (votes election) round
-    q = quota election s
-    -- this compression assumes that we have the exact same candidates in both candidateData and scores
-    d = zipSnd (sortBy (comparing fst) $ candidateData round) (sortBy (comparing fst) $ M.toList s)
     calcWeight q' data' = (c,s)
         where
         c = fst data'
         d' = snd data'
         s = if c == Lost then Hopeful else asState $ (getRatio $ fst d') * q' / (snd d')
+    cullLowestScoring cData s = map (\(x,y) -> (x, if x == lowest then Excluded else y)) cData
+        where
+        asc = M.toAscList s
+        idx = fromMaybe 0 $ findIndex (\(x,y) -> x /= Lost) asc
+        lowest = fst $ asc !! idx
+    filled = countElected round
+    s = scores (votes election) round
+    q = quota election s
+    -- this compression assumes that we have the exact same candidates in both candidateData and scores
+    d = zipSnd (sortBy (comparing fst) $ candidateData round) (sortBy (comparing fst) $ M.toList s)
+    newRound = (Round $ map (calcWeight q) d)
+    result = if newRound /= round then newRound else Round $ cullLowestScoring (candidateData round) s
+    -- calcWeight needs to be repeated, until wj * q / vj ~= 1.0 for all elected
 
 {-
     The convergent iterative scheme is as follows:
@@ -84,7 +93,7 @@ nextRound election round = if filled == seats election then round else (Round $ 
     Using this value for e, calculate the new quota q using rule 2.5.
     Finally update the weights for elected candidates to values wj = wj * q / vj.
     Repeat the process of successively updating wj, q vj and e until every fraction
-    q / vj , for elected candidates, lies within the limits 0.99999 and 1.00001 (inclusive).
+    wJ * q / vj , for elected candidates, lies within the limits 0.99999 and 1.00001 (inclusive).
 
     If no candidate was elected in that manner, exclude the candidate with lowest votes. Resolve ties by PRNG
 -}
