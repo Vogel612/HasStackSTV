@@ -8,6 +8,8 @@ module Candidate (
     , scores
     , totalExcess
     , countElected
+    , getRatio
+    , asState
     )
 where
 
@@ -99,3 +101,9 @@ getRatio state = case state of
     Elected a -> a
     Hopeful -> 1.0
     Excluded -> 0.0
+
+asState :: Double -> CandidateState
+asState ratio
+    | (ratio <= 0.0) = Excluded
+    | (ratio >= 1.0) = Hopeful
+    | otherwise = Elected ratio

@@ -1,18 +1,21 @@
 module Election (
-    Election (..),
-    ElectionResults(..),
-    runElection,
-    addCandidates,
-    addVotes,
-    combine,
-    combineVotes,
-    computeQuota,
-    takeModified)
+    Election (..)
+    , ElectionResults(..)
+    , runElection
+    , addCandidates
+    , addVotes
+    , combine
+    , combineVotes
+    , computeQuota
+    , takeModified
+    , zipSnd
+    )
 where
 
 import Vote
 import Candidate
-import Data.List(sort, nub, groupBy)
+import Data.Ord(comparing)
+import Data.List(sort, nub, groupBy, sortBy)
 import qualified Data.Map as M
 
 data Election = Election {
@@ -77,15 +80,25 @@ takeModified [] = []
     Assuming the election is finished, this is equivalent to id
 -}
 nextRound :: Election -> Round -> Round
-nextRound election round = if filled == seats election then round else go (quota election) (scores $ votes election) round -- to be implemented
+nextRound election round = if filled == seats election then round else (Round $ map (calcWeight q) d) -- to be implemented
     where
     filled = countElected round
-    go :: (Scores -> Double) -> (Round -> Scores) -> Round -> Round
-    go quota' scores' round = newRound
+    s = scores (votes election) round
+    q = quota election s
+    -- this compression assumes that we have the exact same candidates in both candidateData and scores
+    d = zipSnd (sortBy (comparing fst) $ candidateData round) (sortBy (comparing fst) $ M.toList s)
+    calcWeight q' data' = (c,s)
         where
-        s = scores' round
-        q = quota' s
-        newRound = (Round $ candidateData round) -- calculate wj+1
+        c = fst data'
+        d' = snd data'
+        s = if c == Lost then Hopeful else asState $ (getRatio $ fst d') * q' / (snd d')
+
+zipSnd :: [(a, b)] -> [(d,c)] -> [(a,(b,c))]
+zipSnd ((a,x):xs) ((_,y):ys) = (a,(x,y)) : zipSnd xs ys
+zipSnd [] _ = []
+zipSnd _ [] = []
+
+
 {-
     The convergent iterative scheme is as follows:
     set wj to 0 for excluded candidates, 1 for hopeful candidates, and their last calculated values of wj for elected candidates.
