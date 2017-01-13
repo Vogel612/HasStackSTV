@@ -22,12 +22,18 @@ data Election = Election {
     seats :: Int,
     candidates :: [Candidate],
     votes :: [Vote]
-} deriving (Eq, Show)
+} deriving (Eq)
+
+instance Show Election where
+    show e = "The candidates " ++ (shows (unwords $ map name $ candidates e) $ " are running for " ++ shows (seats e) " positions")
 
 data ElectionResults = ElectionResults {
     electedCandidates :: [Candidate],
     rounds :: [Round]
-} deriving (Eq, Show)
+} deriving (Eq)
+
+instance Show ElectionResults where
+    show r = unlines (map show $ rounds r) ++ "\nElected Candidates are: " ++ unwords (map show $ electedCandidates r)
 
 addCandidates :: Election -> [Candidate] -> Election
 addCandidates elect cand = Election (seats elect) (sort $ nub (candidates elect)++cand) (votes elect)
@@ -59,7 +65,7 @@ runElection election = ElectionResults electedCandidates rounds
         rounds = takeModified $ iterate
             (nextRound election)
             (Round $ zip (sort . nub $ candidates election ++ [Lost]) (repeat Hopeful))
-        electedCandidates = map fst $ filter (\(c, s) -> s /= Excluded) $ candidateData (last rounds)
+        electedCandidates = map fst $ filter (\(c, s) -> s /= Excluded && s /= Hopeful) $ candidateData (last rounds)
 
 {-
     Take items from a list, as long as the last item taken is not the same as the next item in the list.
