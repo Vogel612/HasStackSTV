@@ -4,8 +4,6 @@ module Election (
     , runElection
     , addCandidates
     , addVotes
-    , combine
-    , combineVotes
     , computeQuota
     , takeModified
     , zipSnd
@@ -36,28 +34,21 @@ instance Show ElectionResults where
     show r = unlines (map show $ rounds r) ++ "\nElected Candidates are: " ++ unwords (map show $ electedCandidates r)
 
 addCandidates :: Election -> [Candidate] -> Election
-addCandidates elect cand = Election (seats elect) (sort $ nub (candidates elect)++cand) (votes elect)
+addCandidates e c = Election s c' v
+    where
+    s = seats e
+    v = votes e
+    c' = sort $ nub (candidates e)++c
 
 addVotes :: Election -> [Vote] -> Election
-addVotes elect votes = addVotes (addVote elect $ head votes) $ tail votes
-
-addVote :: Election -> Vote -> Election
-addVote elect vote = Election (seats elect) (candidates elect) (combineVotes (votes elect) [vote])
-
-combineVotes :: [Vote] -> [Vote] -> [Vote]
-combineVotes first second = map (foldl combine $ Vote (checkedPreference 0 0 0) 0) $
-    groupBy (\v1 v2 -> pref v1 == pref v2) (first++second)
-
-combine :: Vote -> Vote -> Vote
-combine v1 v2 = Vote (selectPref v1 v2) $ count v1 + count v2
+addVotes e v = Election s c votes'
+    where
+    s = seats e
+    c = candidates e
+    votes' = v ++ votes e
 
 totalVotes :: [Vote] -> Double
 totalVotes x = sum $ map count x
-
-selectPref :: Vote -> Vote -> Preference
-selectPref v1 v2
-    | pref v1 == checkedPreference 0 0 0 = pref v2
-    | otherwise = pref v1
 
 runElection :: Election -> ElectionResults
 runElection election = ElectionResults electedCandidates rounds
