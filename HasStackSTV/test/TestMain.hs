@@ -8,6 +8,7 @@ import Test.HUnit (Test(TestList))
 import TestVote
 import TestElection
 import TestCandidate
+import TestDData
 
 testCases :: Test
 testCases =
@@ -16,6 +17,7 @@ testCases =
         , electionTests
         , candidateOrdering
         , basicTricklePreference
+        , dataTests
     ]
 
 main :: IO()

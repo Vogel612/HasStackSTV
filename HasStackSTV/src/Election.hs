@@ -5,11 +5,10 @@ module Election (
     , addCandidates
     , addVotes
     , computeQuota
-    , takeModified
-    , zipSnd
     )
 where
 
+import DData(zipSnd, takeModified)
 import Vote
 import Candidate
 import Data.Ord(comparing)
@@ -59,20 +58,6 @@ runElection election = ElectionResults electedCandidates rounds
         electedCandidates = map fst $ filter (\(c, s) -> s /= Excluded && s /= Hopeful) $ candidateData (last rounds)
 
 {-
-    Take items from a list, as long as the last item taken is not the same as the next item in the list.
-    Passing an empty list returns an empty list.
--}
-takeModified :: Eq a => [a] -> [a]
-takeModified (x:xs) = [x] ++ go x xs
-    where
-    go :: Eq a => a -> [a] -> [a]
-    go elem (x':xs')
-       | elem == x' = []
-       | otherwise  = [x'] ++ go x' xs'
-    go elem [] = []
-takeModified [] = []
-
-{-
     Run a Round of the given election. The result is the "starting configuration" for the next round.
     Assuming the election is finished, this is equivalent to id
 -}
@@ -89,12 +74,6 @@ nextRound election round = if filled == seats election then round else (Round $ 
         c = fst data'
         d' = snd data'
         s = if c == Lost then Hopeful else asState $ (getRatio $ fst d') * q' / (snd d')
-
-zipSnd :: [(a, b)] -> [(d,c)] -> [(a,(b,c))]
-zipSnd ((a,x):xs) ((_,y):ys) = (a,(x,y)) : zipSnd xs ys
-zipSnd [] _ = []
-zipSnd _ [] = []
-
 
 {-
     The convergent iterative scheme is as follows:
