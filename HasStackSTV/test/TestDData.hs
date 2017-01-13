@@ -39,5 +39,9 @@ zipSndTest = TestLabel "Zip Second of Tuple" $ TestList[
     TestCase $ assertEqual
         "simplisticCase"
         [(1,(1,2)),(2,(1,2)),(3,(1,2))]
-        $ zipSnd (zip [1..3] $ repeat 1) (zip [1..] $ repeat 2)
+        $ zipSnd (zip [1..3] $ repeat 1) (zip [1..] $ repeat 2),
+    TestCase $ assertEqual
+        "drops second list's fst"
+        [(1,(1,2)),(2,(1,2)),(3,(1,2))]
+        $ zipSnd (zip [1..] $ repeat 1) (zip [12, 11, 10] $ repeat 2)
     ]
