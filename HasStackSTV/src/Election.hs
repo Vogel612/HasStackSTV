@@ -5,6 +5,7 @@ module Election (
     , addCandidates
     , addVotes
     , computeQuota
+    , fromBallot
     )
 where
 
@@ -63,18 +64,14 @@ runElection election = ElectionResults electedCandidates rounds
     Assuming the election is finished, this is equivalent to id
 -}
 nextRound :: Election -> Round -> Round
-nextRound election round = if filled == seats election then round else (Round $ map (calcWeight q) d) -- to be implemented
+nextRound election round = if filled == seats election then round else (Round $ map (calcWeight q) d)
     where
+    calcWeight :: Double -> (Candidate, (CandidateState, Double)) -> (Candidate, CandidateState)
     calcWeight q' data' = (c,s)
         where
         c = fst data'
         d' = snd data'
         s = if c == Lost then Hopeful else asState $ (getRatio $ fst d') * q' / (snd d')
-    cullLowestScoring cData s = map (\(x,y) -> (x, if x == lowest then Excluded else y)) cData
-        where
-        asc = M.toAscList s
-        idx = fromMaybe 0 $ findIndex (\(x,y) -> x /= Lost) asc
-        lowest = fst $ asc !! idx
     filled = countElected round
     s = scores (votes election) round
     q = quota election s
@@ -83,6 +80,15 @@ nextRound election round = if filled == seats election then round else (Round $ 
     newRound = (Round $ map (calcWeight q) d)
     result = if newRound /= round then newRound else Round $ cullLowestScoring (candidateData round) s
     -- calcWeight needs to be repeated, until wj * q / vj ~= 1.0 for all elected
+
+cullLowestScoring :: CandidateData -> Scores -> CandidateData
+cullLowestScoring cData s = map (\(x,y) -> (x, if x == lowest then Excluded else y)) cData
+    where
+    asc = M.toAscList s
+    idx = fromMaybe 0 $ findIndex (\(x,y) -> x /= Lost) asc
+    lowest = fst $ asc !! idx
+
+
 
 {-
     The convergent iterative scheme is as follows:
@@ -99,19 +105,6 @@ nextRound election round = if filled == seats election then round else (Round $ 
 -}
 
 {-
-    Successively run each round. Since they are dependent on one another, we need the results of the
-    previous round anyways. The first round must be the round that comes up when all candidates are marked helpful.
-
-    Takes a calculator for the passing quota depending on the excess votes, the entirity of cast votes and the "previous"
-    and generates the subsequent rounds by recursively calling itself until all seats have been filled.
--}
-runRounds :: (Double -> Double) -> [Vote] -> Round -> [Round]
-runRounds quotaFromExcess votes round = undefined
-
-convergeKeepRatios :: M.Map Candidate CandidateState -> [Vote] -> M.Map Candidate CandidateState
-convergeKeepRatios = undefined
-
-{-
     Computes the quota necessary to get counted as Elected from the total number of votes,
     the excess votes that went "lost" and the number of seats available for this election
 -}
@@ -124,3 +117,17 @@ quota election scores = (t - e) / s
 
 computeQuota :: Double -> Int -> Double -> Double
 computeQuota total seats excess = (total - excess) / fromIntegral (seats + 1)
+
+fromBallot :: String -> Election
+fromBallot contents = Election seats candidates votes
+    where
+    ln = lines contents
+    e = head ln
+    candCount = read $ (words e)!!0
+    seats = read $ (words e)!!1
+    -- skip the row containing candidates and seats counters
+    -- if the first line is not a vote we need to skip it, too, but that's TBD
+    votes = combineVotes (map fromString $ takeWhile (\f -> f /= "0" && f /= "0\r") $ tail ln) []
+    -- skip the row containing the 0, take as many as advertised, else we get the election title, too
+    rawCandidates = take candCount $ tail $ dropWhile (\f -> f /= "0" && f /= "0\r") ln
+    candidates = map (\(i, n) -> Candidate n i) $ zip [1..] $ rawCandidates
