@@ -37,7 +37,7 @@ data CandidateState = Elected {
   | Excluded deriving (Show, Eq)
 
 data Round = Round {
- candidateData :: CandidateData
+    candidateData :: CandidateData
 } deriving (Eq, Show)
 
 {-
@@ -64,15 +64,14 @@ countElected round = length $ filter (\(c,s) -> s /= Excluded && s /= Hopeful) $
 -}
 trickleAllPreferences :: CandidateData -> [Vote] -> Scores -> Scores
 trickleAllPreferences candidates [] score = score
-trickleAllPreferences candidates x score =
-    trickleAllPreferences candidates (tail x) (tricklePreference candidates (head x) score)
+trickleAllPreferences candidates (x:xs) score =
+    trickleAllPreferences candidates xs (tricklePreference candidates x score)
 
 {-
     Returns how many votes were "Lost" because they trickled down through all candidates
 -}
 totalExcess :: Scores -> Double
 totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
-
 
 {-
     With the given CandidateStates applies a Vote to the given map of scores.
@@ -83,14 +82,14 @@ totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
     will be counted as Lost. Excluded candidates do not consume votes.
 -}
 tricklePreference :: CandidateData -> Vote -> Scores -> Scores
-tricklePreference candidates vote scores = do
-    let oldPref = pref vote
-    let candidateState = candidates !! first oldPref
-    let ratio = getRatio (snd candidateState)
-    let keep = ratio * count vote
-    let newScores = M.update (\x -> Just (x+keep)) (fst candidateState) scores
-    let newPref = checkedPreference (second oldPref) (third oldPref) 0
-    let remainder = count vote - keep
+tricklePreference candidates (Vote (Preference f s t) c) scores = do
+    let (cand, weight) = candidates !! f
+    let ratio = getRatio weight
+    let keep = ratio * c
+    -- the update function ignores Nothing, because all candidates have been added in initialScores
+    let newScores = M.update (\x -> Just (x+keep)) cand scores
+    let newPref = checkedPreference s t 0
+    let remainder = c - keep
     if remainder > 0 then
         tricklePreference candidates (Vote newPref remainder) newScores
     else

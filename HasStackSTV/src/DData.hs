@@ -14,11 +14,11 @@ zipSnd _ [] = []
     Passing an empty list returns an empty list.
 -}
 takeModified :: Eq a => [a] -> [a]
-takeModified (x:xs) = [x] ++ go x xs
+takeModified (x:xs) = x : go x xs
     where
     go :: Eq a => a -> [a] -> [a]
-    go elem (x':xs')
-       | elem == x' = []
-       | otherwise  = [x'] ++ go x' xs'
-    go elem [] = []
+    go prev (x':xs')
+       | prev == x' = []
+       | otherwise  = x' : go x' xs'
+    go _ [] = []
 takeModified [] = []
