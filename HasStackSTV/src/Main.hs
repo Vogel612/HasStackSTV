@@ -11,7 +11,7 @@ import Candidate(Candidate(..))
 main :: IO ()
 main = do
     args <- getArgs
-    contents <- readFile (args !! 0)
+    contents <- readFile (head args)
     let election = fromBallot contents
-    putStrLn $show $ runElection election
+    (print . runElection) election
 

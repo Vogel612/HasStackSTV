@@ -1,4 +1,6 @@
-module TestCandidate where
+module TestCandidate (
+  candidateTests
+) where
 
 import Candidate
 import Test.HUnit (Test(..), assertEqual, assertBool)
@@ -6,6 +8,13 @@ import Vote (checkedPreference, Vote(..))
 import Data.List(permutations)
 import qualified Data.Map as M
 
+
+candidateTests :: Test
+candidateTests = TestLabel "Candidate Tests" $ TestList [
+    candidateOrdering
+    , basicTricklePreference
+    , countTheElected
+  ]
 
 candidateOrdering :: Test
 candidateOrdering = TestLabel "Candidate Ordering" $ TestList [

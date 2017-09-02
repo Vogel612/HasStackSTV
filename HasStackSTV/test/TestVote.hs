@@ -5,7 +5,13 @@ import Vote
 
 voteTests :: Test
 voteTests = TestLabel "Vote Tests" $
-    TestList [ basicVote, multiVote, basicVoteFail, incompleteVote, preferenceConstruction ]
+    TestList [
+      basicVote
+      , multiVote
+      , basicVoteFail
+      , incompleteVote
+      , preferenceConstruction
+    ]
 
 basicVote =
     TestCase $ assertEqual

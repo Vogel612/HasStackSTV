@@ -13,11 +13,11 @@ import TestDData
 testCases :: Test
 testCases =
     TestList [
-        voteTests
+        dataTests
+        , candidateTests
         , electionTests
-        , candidateOrdering
-        , basicTricklePreference
-        , dataTests
+        , voteTests
+        --, basicTricklePreference
     ]
 
 main :: IO()

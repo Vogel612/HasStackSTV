@@ -3,9 +3,9 @@ module Candidate (
     , CandidateState (..)
     , CandidateData
     , Scores
+    , VoteCount
     , Round (..)
     , calculateScores
-    , scores
     , totalExcess
     , countElected
     , getRatio
@@ -17,7 +17,8 @@ import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Vote
 
-type Scores = M.Map Candidate Double
+type VoteCount = Double
+type Scores = M.Map Candidate VoteCount
 type CandidateData = [(Candidate, CandidateState)]
 
 data Candidate = Candidate {
@@ -46,12 +47,6 @@ data Round = Round {
 calculateScores :: CandidateData ->  [Vote] -> Scores
 calculateScores candidates votes = trickleAllPreferences candidates votes initialScore
     where initialScore = M.fromList $ zip (map fst candidates) $ repeat 0.0
-
-{-
-    Convenience accessor to calculateScores dropping the need to unwrap Round
--}
-scores :: [Vote] -> Round -> Scores
-scores votes round = calculateScores (candidateData round) votes
 
 {-
     Count the elected candidates in a round
@@ -83,8 +78,8 @@ totalExcess scores = fromMaybe 0.0 $ M.lookup Lost scores
 -}
 tricklePreference :: CandidateData -> Vote -> Scores -> Scores
 tricklePreference candidates (Vote (Preference f s t) c) scores = do
-    let (cand, weight) = candidates !! f
-    let ratio = getRatio weight
+    let (cand, state) = candidates !! f
+    let ratio = getRatio state
     let keep = ratio * c
     -- the update function ignores Nothing, because all candidates have been added in initialScores
     let newScores = M.update (\x -> Just (x+keep)) cand scores

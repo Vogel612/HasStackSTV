@@ -13,6 +13,7 @@ zipSnd _ [] = []
     Take items from a list, as long as the last item taken is not the same as the next item in the list.
     Passing an empty list returns an empty list.
 -}
+
 takeModified :: Eq a => [a] -> [a]
 takeModified (x:xs) = x : go x xs
     where
